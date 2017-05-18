@@ -51,13 +51,54 @@ Set it to nil if you don't want this limit."
   :group 'helm-company
   :type '(choice (const :tag "Disabled" nil) integer))
 
+(defcustom helm-company-show-annotations t
+  "Show annotations provided by company-backend when completing.
+
+Annotations will be formatted in `helm-company-annotation-face'."
+  :group 'helm-company
+  :type 'boolean )
+
 (defvar helm-company-help-window nil)
 (defvar helm-company-backend nil)
+(defvar helm-company-raw-candidates-hash nil
+  "A hash table.
+
+KEY: a candidate string with all properties removed
+
+VALUE: (candidate strings exactly as provided by company-backend ...)
+
+Each key is a completion candidate string, with all properties
+stripped off. Each key's value is a list of original completion
+candidate strings, exactly as provided by company-backend.
+
+Some completion backends use string properties to store and
+retrieve annotation data. Helm strips all properties off before
+completion, which may break this feature. So, the original
+strings provided by company-backend are stored here, so they can
+be retrieved and passed to company-backend when asking for
+annotations.
+
+Since the same bare string might have different annotations, each
+value in the hash table is a *list*, not a single string.")
+
+(defface helm-company-annotation-face
+  '((t (:foreground "orange" :underline t)))
+  "Face used for the candidate annotation in helm.")
 
 (defun helm-company-call-backend (&rest args)
   "Bridge between helm-company and company"
   (let ((company-backend helm-company-backend))
     (apply 'company-call-backend args)))
+
+(defun helm-company--hash-raw-candidates (candidates)
+  (let ((hash (make-hash-table :test 'equal :size 1000)))
+    (loop for raw-cand in candidates
+          for clean-cand = (substring-no-properties raw-cand)
+          do (puthash clean-cand
+                      (append (gethash raw-cand hash nil)
+                              (list raw-cand))
+                      hash)
+          finally return hash)))
 
 (defun helm-company-init ()
   "Prepare helm for company."
@@ -68,9 +109,15 @@ Set it to nil if you don't want this limit."
   (setq helm-company-help-window nil)
   (if (<= (length company-candidates) 1)
       (helm-exit-minibuffer)
-    (setq helm-company-backend    company-backend
-          helm-company-candidates company-candidates))
+    (setq helm-company-backend             company-backend
+          helm-company-candidates          company-candidates
+          helm-company-raw-candidates-hash (helm-company--hash-raw-candidates company-candidates)))
   (company-abort))
+
+(defun helm-company-cleanup ()
+  (setq helm-company-backend             nil
+        helm-company-candidates          nil
+        helm-company-raw-candidates-hash nil))
 
 (defun helm-company-action-insert (candidate)
   "Insert CANDIDATE."
@@ -147,6 +194,55 @@ Set it to nil if you don't want this limit."
   (helm-company-run-action
    (helm-company-find-location (helm-get-selection))))
 
+(defun helm-company--propertize-annotation (str)
+  (let ((str (concat str)))             ; Copy the string
+    (put-text-property 0 (length str) 'font-lock-face 'helm-company-annotation-face
+                       str)
+    str))
+
+(defun helm-company--make-display-string (candidate annotation)
+  (if (null annotation)
+      candidate
+    (concat candidate " " (helm-company--propertize-annotation annotation))))
+
+(defun helm-company--get-annotations (candidate)
+  "Return a list of the annotations (if any) supplied for a
+candidate by company-backend.
+
+When getting annotations from `company-backend', first it tries
+with the `candidate' arg. If that doesn't work, it gets the
+original candidate string(s) from
+`helm-company-raw-candidates-hash', and tries with those."
+  (company-manual-begin)
+  (let ((raw-candidates (gethash candidate helm-company-raw-candidates-hash '(""))))
+    (loop for raw-cand in raw-candidates
+          collect (or (company-call-backend 'annotation candidate)
+                      (company-call-backend 'annotation raw-cand)))))
+
+(defun helm-company--make-display-candidate-pairs (candidates)
+  (loop for cand in candidates
+        append
+        (loop for annot in (helm-company--get-annotations cand)
+              collect (cons (helm-company--make-display-string cand annot)
+                            cand))))
+
+(defun helm-company-add-annotations-transformer-1 (candidates &optional sort)
+  (with-helm-current-buffer
+    (let ((results (helm-company--make-display-candidate-pairs candidates)))
+      (if sort
+          (sort results #'helm-generic-sort-fn)
+        results))))
+
+(defun helm-company-add-annotations-transformer (candidates _source)
+  "Transform a flat list of completion candidate strings
+into (DISPLAY . REAL) pairs.
+
+The display strings have the company-provided annotation
+appended, and formatted in `helm-company-annotation-face'."
+  (if (or (not helm-company-show-annotations) (consp (car candidates)))
+      candidates
+    (helm-company-add-annotations-transformer-1 candidates (null helm--in-fuzzy))))
+
 (defvar helm-company-map
   (let ((keymap (make-sparse-keymap)))
     (set-keymap-parent keymap helm-map)
@@ -170,6 +266,8 @@ Set it to nil if you don't want this limit."
     :data (lambda ()
             (helm-company-init)
             (helm-attr 'company-candidates))
+    :filtered-candidate-transformer 'helm-company-add-annotations-transformer
+    :cleanup 'helm-company-cleanup
     :fuzzy-match helm-company-fuzzy-match
     :keymap helm-company-map
     :persistent-action 'helm-company-show-doc-buffer
