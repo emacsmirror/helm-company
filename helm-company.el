@@ -60,6 +60,7 @@ Annotations will be formatted in `helm-company-annotation-face'."
   :type 'boolean )
 
 (defvar helm-company-help-window nil)
+(defvar helm-company-candidates nil)
 (defvar helm-company-backend nil)
 (defvar helm-company-raw-candidates-hash nil
   "A hash table.
@@ -148,9 +149,9 @@ value in the hash table is a *list*, not a single string.")
       (if (and helm-company-help-window
                (window-live-p helm-company-help-window))
           (with-selected-window helm-company-help-window
-            (helm-company-display-persistent-buffer buffer))
+            (helm-company-display-document-buffer buffer))
         (setq helm-company-help-window
-              (helm-company-display-persistent-buffer buffer))))))
+              (helm-company-display-document-buffer buffer))))))
 
 (defun helm-company-find-location (candidate)
   "Find location of CANDIDATE."
@@ -180,8 +181,12 @@ value in the hash table is a *list*, not a single string.")
 (defmacro helm-company-run-action (&rest body)
   `(with-helm-window
      (save-selected-window
-       (with-helm-display-same-window
-        ,@body))))
+       ;; `with-helm-display-same-window' has been removed from recent helm
+       ;; versions.
+       (if (fboundp 'with-helm-display-same-window)
+           (with-helm-display-same-window
+            ,@body)
+         ,@body))))
 
 (defun helm-company-run-show-doc-buffer ()
   "Run showing documentation action from `helm-company'."
