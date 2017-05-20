@@ -33,6 +33,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-multi-match)
 (require 'helm-files)
@@ -92,13 +93,13 @@ value in the hash table is a *list*, not a single string.")
 
 (defun helm-company--hash-raw-candidates (candidates)
   (let ((hash (make-hash-table :test 'equal :size 1000)))
-    (loop for raw-cand in candidates
-          for clean-cand = (substring-no-properties raw-cand)
-          do (puthash clean-cand
-                      (append (gethash raw-cand hash nil)
-                              (list raw-cand))
-                      hash)
-          finally return hash)))
+    (cl-loop for raw-cand in candidates
+             for clean-cand = (substring-no-properties raw-cand)
+             do (puthash clean-cand
+                         (append (gethash raw-cand hash nil)
+                                 (list raw-cand))
+                         hash)
+             finally return hash)))
 
 (defun helm-company-init ()
   "Prepare helm for company."
@@ -180,7 +181,7 @@ value in the hash table is a *list*, not a single string.")
   `(with-helm-window
      (save-selected-window
        (with-helm-display-same-window
-         ,@body))))
+        ,@body))))
 
 (defun helm-company-run-show-doc-buffer ()
   "Run showing documentation action from `helm-company'."
@@ -215,16 +216,16 @@ original candidate string(s) from
 `helm-company-raw-candidates-hash', and tries with those."
   (company-manual-begin)
   (let ((raw-candidates (gethash candidate helm-company-raw-candidates-hash '(""))))
-    (loop for raw-cand in raw-candidates
-          collect (or (company-call-backend 'annotation candidate)
-                      (company-call-backend 'annotation raw-cand)))))
+    (cl-loop for raw-cand in raw-candidates
+             collect (or (company-call-backend 'annotation candidate)
+                         (company-call-backend 'annotation raw-cand)))))
 
 (defun helm-company--make-display-candidate-pairs (candidates)
-  (loop for cand in candidates
-        append
-        (loop for annot in (helm-company--get-annotations cand)
-              collect (cons (helm-company--make-display-string cand annot)
-                            cand))))
+  (cl-loop for cand in candidates
+           append
+           (cl-loop for annot in (helm-company--get-annotations cand)
+                    collect (cons (helm-company--make-display-string cand annot)
+                                  cand))))
 
 (defun helm-company-add-annotations-transformer-1 (candidates &optional sort)
   (with-helm-current-buffer
