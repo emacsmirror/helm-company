@@ -1,4 +1,4 @@
-helm-company.el [![Build Status](https://travis-ci.org/yasuyk/helm-company.png)](https://travis-ci.org/yasuyk/helm-company)
+helm-company.el [![Build Status](https://travis-ci.org/Sodel-the-Vociferous/helm-company.png)](https://travis-ci.org/Sodel-the-Vociferous/helm-company)
 ============
 
 [Helm] interface for [company-mode]
