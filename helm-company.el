@@ -132,7 +132,11 @@ Set it to nil if you don't want this limit."
 (defmacro helm-company-run-action (&rest body)
   `(with-helm-window
      (save-selected-window
-       (with-helm-display-same-window
+       ;; `with-helm-display-same-window' has been removed from recent helm
+       ;; versions.
+       (if (fboundp 'with-helm-display-same-window)
+           (with-helm-display-same-window
+            ,@body)
          ,@body))))
 
 (defun helm-company-run-show-doc-buffer ()
