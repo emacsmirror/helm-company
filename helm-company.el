@@ -52,6 +52,7 @@ Set it to nil if you don't want this limit."
   :type '(choice (const :tag "Disabled" nil) integer))
 
 (defvar helm-company-help-window nil)
+(defvar helm-company-candidates nil)
 (defvar helm-company-backend nil)
 
 (defun helm-company-call-backend (&rest args)
