@@ -100,9 +100,9 @@ Set it to nil if you don't want this limit."
       (if (and helm-company-help-window
                (window-live-p helm-company-help-window))
           (with-selected-window helm-company-help-window
-            (helm-company-display-persistent-buffer buffer))
+            (helm-company-display-document-buffer buffer))
         (setq helm-company-help-window
-              (helm-company-display-persistent-buffer buffer))))))
+              (helm-company-display-document-buffer buffer))))))
 
 (defun helm-company-find-location (candidate)
   "Find location of CANDIDATE."
