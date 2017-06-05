@@ -293,7 +293,13 @@ face."
 It is useful to narrow candidates."
   (interactive)
   (unless company-candidates
-    (company-complete))
+    (company-complete)
+    ;; Work around a bug in company. `company-complete' inserts the common part
+    ;; of all candidates into the buffer. But, it doesn't update
+    ;; `company-prefix' -- and `company-prefix' is all `company-finish'
+    ;; replaces in the buffer. (issue #9)
+    (when company-common
+      (setq company-prefix company-common)))
   (let ((initial-pattern (if helm-company-initialize-pattern-with-thing-at-point
                              (thing-at-point 'symbol)
                            "")))
