@@ -130,7 +130,9 @@ value in the hash table is a *list*, not a single string.")
   "Insert CANDIDATE."
   (let* ((company-candidates (helm-attr 'company-candidates))
          (company-backend (helm-attr 'company-backend))
-         (selection (cl-find-if (lambda (s) (string-equal candidate s)) company-candidates))
+         ;; Get the original string from the candidates list, in case the
+         ;; company backend relies on e.g. properties in the original string.
+         (selection (car (member candidate company-candidates)))
          (company-common (helm-attr 'company-common))
          (company-prefix (helm-attr 'company-prefix)))
     (company-finish selection))
