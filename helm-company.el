@@ -118,8 +118,7 @@ value in the hash table is a *list*, not a single string.")
       (helm-exit-minibuffer)
     (setq helm-company-backend             company-backend
           helm-company-candidates          company-candidates
-          helm-company-raw-candidates-hash (helm-company--hash-raw-candidates company-candidates)))
-  (company-abort))
+          helm-company-raw-candidates-hash (helm-company--hash-raw-candidates company-candidates))))
 
 (defun helm-company-cleanup ()
   (setq helm-company-backend             nil
