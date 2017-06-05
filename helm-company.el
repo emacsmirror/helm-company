@@ -55,7 +55,8 @@ Set it to nil if you don't want this limit."
 (defcustom helm-company-show-annotations t
   "Show annotations provided by company-backend when completing.
 
-Annotations will be formatted in `helm-company-annotation-face'."
+Annotations will be formatted in the `company-tooltip-annotation'
+face."
   :group 'helm-company
   :type 'boolean )
 
@@ -90,10 +91,6 @@ annotations.
 
 Since the same bare string might have different annotations, each
 value in the hash table is a *list*, not a single string.")
-
-(defface helm-company-annotation-face
-  '((t (:foreground "orange" :underline t)))
-  "Face used for the candidate annotation in helm.")
 
 (defun helm-company-call-backend (&rest args)
   "Bridge between helm-company and company"
@@ -211,7 +208,7 @@ value in the hash table is a *list*, not a single string.")
 
 (defun helm-company--propertize-annotation (str)
   (let ((str (concat str)))             ; Copy the string
-    (put-text-property 0 (length str) 'font-lock-face 'helm-company-annotation-face
+    (put-text-property 0 (length str) 'font-lock-face 'company-tooltip-annotation
                        str)
     str))
 
@@ -253,7 +250,8 @@ original candidate string(s) from
 into (DISPLAY . REAL) pairs.
 
 The display strings have the company-provided annotation
-appended, and formatted in `helm-company-annotation-face'."
+appended, and formatted in the `company-tooltip-annotation'
+face."
   (if (or (not helm-company-show-annotations) (consp (car candidates)))
       candidates
     (helm-company-add-annotations-transformer-1 candidates (null helm--in-fuzzy))))
