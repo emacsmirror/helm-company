@@ -127,7 +127,8 @@ value in the hash table is a *list*, not a single string.")
 (defun helm-company-cleanup ()
   (setq helm-company-backend             nil
         helm-company-candidates          nil
-        helm-company-raw-candidates-hash nil))
+        helm-company-raw-candidates-hash nil)
+  (company-abort))
 
 (defun helm-company-action-insert (candidate)
   "Insert CANDIDATE."
