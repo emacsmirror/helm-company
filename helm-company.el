@@ -60,7 +60,7 @@ face."
   :group 'helm-company
   :type 'boolean )
 
-(defcustom helm-company-initialize-pattern-with-thing-at-point nil
+(defcustom helm-company-initialize-pattern-with-prefix nil
   "Use the thing-at-point as the initial helm completion pattern.
 
 The thing-at-point is whatever partial thing you've typed that
@@ -301,9 +301,7 @@ It is useful to narrow candidates."
     ;; replaces in the buffer. (issue #9)
     (when company-common
       (setq company-prefix company-common)))
-  (let ((initial-pattern (if helm-company-initialize-pattern-with-thing-at-point
-                             (thing-at-point 'symbol)
-                           "")))
+  (let ((initial-pattern (and helm-company-initialize-pattern-with-prefix company-prefix)))
     (when company-point
       (helm :sources 'helm-source-company
             :buffer  "*helm company*"
