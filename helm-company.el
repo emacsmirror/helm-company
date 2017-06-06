@@ -226,7 +226,6 @@ When getting annotations from `company-backend', first it tries
 with the `candidate' arg. If that doesn't work, it gets the
 original candidate string(s) from
 `helm-company-raw-candidates-hash', and tries with those."
-  (company-manual-begin)
   (let ((raw-candidates (gethash candidate helm-company-raw-candidates-hash '(""))))
     (cl-loop for raw-cand in raw-candidates
              collect (or (company-call-backend 'annotation candidate)
