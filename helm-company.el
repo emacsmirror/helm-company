@@ -67,7 +67,9 @@ face."
 The thing-at-point is whatever partial thing you've typed that
 you're trying to complete."
   :group 'helm-company
-  :type 'boolean)
+  :type '(choice (const :tag "Disabled" nil)
+                 (const :tag "Enabled, use prefix as typed" t)
+                 (const :tag "Enabled, use lower-cased prefix" :downcase)))
 
 (defvar helm-company-help-window nil)
 (defvar helm-company-candidates nil)
@@ -311,13 +313,21 @@ It is useful to narrow candidates."
   (interactive)
   (unless company-candidates
     (company-complete)
-    ;; (company-call-frontends 'hide) Work around a quirk with company.
-    ;; `company-complete' inserts the common part of all candidates into the
-    ;; buffer. But, it doesn't update `company-prefix' -- and `company-prefix'
-    ;; is all `company-finish' replaces in the buffer. (issue #9)
+    ;; Work around a quirk with company. `company-complete' inserts the common
+    ;; part of all candidates into the buffer. But, it doesn't update
+    ;; `company-prefix' -- and `company-prefix' is all `company-finish' replaces
+    ;; in the buffer. (issue #9)
     (when company-common
       (setq company-prefix company-common)))
-  (let ((initial-pattern (and helm-company-initialize-pattern-with-prefix company-prefix)))
+  (let* ((downcase (eq helm-company-initialize-pattern-with-prefix :downcase))
+         (company-prefix (if (or (null company-prefix)
+                                   (equal 0 (length company-prefix)))
+                             nil
+                           company-prefix))
+         (initial-pattern (and company-prefix
+                               helm-company-initialize-pattern-with-prefix
+                               (if downcase (downcase company-prefix)
+                                 company-prefix))))
     (when company-point
       (helm :sources 'helm-source-company
             :buffer  "*helm company*"
