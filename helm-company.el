@@ -70,7 +70,7 @@ you're trying to complete."
   :type 'boolean)
 
 (defcustom helm-company-after-completion-hooks nil
-  "Normal hook run when entering Text mode and many related modes."
+  "Hook run after helm-company has inserted the selected completion candidate."
   :type 'hook
   :group 'helm-company)
 
