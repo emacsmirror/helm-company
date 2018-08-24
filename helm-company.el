@@ -107,7 +107,7 @@ annotations.")
   (helm-attrset 'company-prefix company-prefix)
   (helm-attrset 'company-backend company-backend)
   (setq helm-company-help-window nil)
-  (if (<= (length company-candidates) 1)
+  (if (< (length company-candidates) 1)
       (helm-exit-minibuffer)
     (setq helm-company-backend                 company-backend
           helm-company-candidates              company-candidates
