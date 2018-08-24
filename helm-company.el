@@ -130,10 +130,13 @@ annotations.")
          (company-backend (helm-attr 'company-backend))
          (company-common (helm-attr 'company-common))
          (company-prefix (helm-attr 'company-prefix)))
-    (company-finish candidate))
-  (run-hooks 'helm-company-after-completion-hooks)
-  ;; for GC
-  (helm-company-cleanup-post-action))
+    ;; `company-manual-begin' keeps company from throwing an error in
+    ;; `company-post-command', its post-command hook.
+    (when (company-manual-begin)
+      (company--insert-candidate candidate)
+      (run-hooks 'helm-company-after-completion-hooks)
+      ;; for GC
+      (helm-company-cleanup-post-action))))
 
 (defun helm-company-action-show-document (candidate)
   "Show the documentation of the CANDIDATE."
