@@ -134,7 +134,11 @@ annotations.")
     ;; `company-post-command', its post-command hook.
     (when (company-manual-begin)
       (company--insert-candidate candidate)
-      (funcall company-backend 'post-completion candidate)
+      (if (listp company-backend) ; grouped backend?
+	  (loop for ea in company-backend
+		when (fboundp ea)
+		do (funcall ea 'post-completion candidate))
+	(funcall company-backend 'post-completion candidate))
       (run-hooks 'helm-company-after-completion-hooks)
       ;; for GC
       (helm-company-cleanup-post-action))))
