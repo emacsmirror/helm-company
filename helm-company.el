@@ -331,7 +331,12 @@ It is useful to narrow candidates."
     ;; is all `company-finish' replaces in the buffer. (issue #9)
     (when company-common
       (setq company-prefix company-common)))
-  (let ((initial-pattern (and helm-company-initialize-pattern-with-prefix company-prefix)))
+  (let ((initial-pattern (and helm-company-initialize-pattern-with-prefix
+                              company-prefix))
+
+        ;; Abort company completion & hide company frontend if we keyboard-quit
+        ;; (C-g) out of `helm-company'.
+        (helm-quit-hook (cons 'company-abort helm-quit-hook)))
     (when company-point
       (helm :sources 'helm-source-company
             :buffer  "*helm company*"
