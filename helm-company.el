@@ -190,7 +190,10 @@ annotations.")
        (if (fboundp 'with-helm-display-same-window)
            (with-helm-display-same-window
             ,@body)
-         ,@body))))
+         ,@body)
+
+       ;; For GC
+       (setq helm-company--display-candidates-hash nil))))
 
 (defun helm-company-run-show-doc-buffer ()
   "Run showing documentation action from `helm-company'."
