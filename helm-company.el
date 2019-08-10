@@ -229,13 +229,6 @@ original candidate string(s) from
 `helm-company-display-candidates-hash', and tries with those."
   (company-call-backend 'annotation candidate))
 
-(defun helm-company--make-display-candidate-pairs (candidates)
-  (cl-loop for cand in candidates
-           append
-           (cl-loop for annot in (helm-company--get-annotations cand)
-                    collect (cons (helm-company--make-display-string cand annot)
-                                  cand))))
-
 (defun helm-company--make-display-candidate-hash (candidates)
   (let ((hash (make-hash-table :test 'equal :size 1000)))
     (cl-loop for candidate in candidates
@@ -244,24 +237,6 @@ original candidate string(s) from
              for key = (substring-no-properties display-str)
              do (puthash key (cons display-str candidate) hash))
     hash))
-
-(defun helm-company-add-annotations-transformer-1 (candidates &optional sort)
-  (with-helm-current-buffer
-    (let ((results (helm-company--make-display-candidate-pairs candidates)))
-      (if sort
-          (sort results #'helm-generic-sort-fn)
-        results))))
-
-(defun helm-company-add-annotations-transformer (candidates _source)
-  "Transform a flat list of completion candidate strings
-into (DISPLAY . REAL) pairs.
-
-The display strings have the company-provided annotation
-appended, and formatted in the `company-tooltip-annotation'
-face."
-  (if (or (not helm-company-show-annotations) (consp (car candidates)))
-      candidates
-    (helm-company-add-annotations-transformer-1 candidates (null helm--in-fuzzy))))
 
 (defun helm-company-get-display-strings ()
   (let ((sort (null helm--in-fuzzy))
