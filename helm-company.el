@@ -230,9 +230,10 @@ original candidate string(s) from
   (company-call-backend 'annotation candidate))
 
 (defun helm-company--make-display-candidate-pairs (candidates)
-  (cl-loop for cand in candidates
+  (cl-loop for cand in (seq-map #'helm-company--clean-string candidates)
            append
-           (cl-loop for annot in (helm-company--get-annotations cand)
+           (cl-loop for annot in (seq-map #'helm-company--clean-string
+                                          (helm-company--get-annotations cand))
                     collect (cons (helm-company--make-display-string cand annot)
                                   cand))))
 
@@ -278,6 +279,29 @@ face."
   (let ((display-strs (mapcar 'substring-no-properties display-strs)))
     (mapcar (lambda (display-str) (car (gethash display-str helm-company-display-candidates-hash)))
             display-strs)))
+
+;; Taken verbatim from `company--clean-string'. I don't use that function
+;; directly because it's a private function inside `company', so I can't rely on
+;; it. I have copied it here.
+(defun helm-company--clean-string (str)
+  (replace-regexp-in-string
+   "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]"
+   (lambda (match)
+     (cond
+      ((match-beginning 1)
+       ;; FIXME: Better char for 'non-printable'?
+       ;; We shouldn't get any of these, but sometimes we might.
+       "\u2017")
+      ((match-beginning 2)
+       ;; Zero-width non-breakable space.
+       "")
+      ((> (string-width match) 1)
+       (concat
+        (make-string (1- (string-width match)) ?\ufeff)
+        match))
+      (t match)))
+   str))
+
 
 (defvar helm-company-map
   (let ((keymap (make-sparse-keymap)))
