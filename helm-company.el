@@ -222,6 +222,7 @@ annotations.")
 (defun helm-company--get-annotations (candidate)
   "Return the annotation (if any) supplied for a candidate by
 company-backend."
+  (company-call-backend 'annotation candidate))
 
 (defun helm-company--make-display-candidate-hash (candidates)
   (let ((hash (make-hash-table :test 'equal :size 1000)))
