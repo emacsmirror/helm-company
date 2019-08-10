@@ -220,14 +220,8 @@ annotations.")
       (concat candidate " " (helm-company--propertize-annotation annotation)))))
 
 (defun helm-company--get-annotations (candidate)
-  "Return a list of the annotations (if any) supplied for a
-candidate by company-backend.
-
-When getting annotations from `company-backend', first it tries
-with the `candidate' arg. If that doesn't work, it gets the
-original candidate string(s) from
-`helm-company-display-candidates-hash', and tries with those."
-  (company-call-backend 'annotation candidate))
+  "Return the annotation (if any) supplied for a candidate by
+company-backend."
 
 (defun helm-company--make-display-candidate-hash (candidates)
   (let ((hash (make-hash-table :test 'equal :size 1000)))
